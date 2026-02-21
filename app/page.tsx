@@ -2,22 +2,11 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { callAIAgent } from '@/lib/aiAgent'
-import {
-  FaCoins,
-  FaTrophy,
-  FaSkull,
-  FaWallet,
-  FaFire,
-  FaGlassCheers,
-  FaHeart,
-  FaBinoculars,
-  FaLightbulb,
-  FaChevronDown,
-  FaChevronUp,
-  FaDice,
-} from 'react-icons/fa'
+import { HiMiniTrophy, HiChevronDown, HiChevronUp } from 'react-icons/hi2'
+import { IoWallet, IoFlame, IoDice, IoSkull, IoHeart, IoBulb, IoEye, IoSparkles } from 'react-icons/io5'
+import { FaCoins } from 'react-icons/fa'
 
-// ─── Constants ──────────────────────────────────────────────────────
+// ---- Constants ----
 
 const AGENT_ID = '699a0c496c4c5162bafb2ba1'
 
@@ -34,11 +23,31 @@ const OPPONENT_NAMES = [
   'TossKing',
 ]
 
-// ─── Types ──────────────────────────────────────────────────────────
+const SF_FONT = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif'
+
+// iOS system colors
+const IOS = {
+  black: '#000000',
+  gray6: '#1c1c1e',
+  gray5: '#2c2c2e',
+  gray4: '#3a3a3c',
+  gray3: '#48484a',
+  secondaryLabel: 'rgba(235, 235, 245, 0.6)',
+  tertiaryLabel: 'rgba(235, 235, 245, 0.3)',
+  quaternaryLabel: 'rgba(235, 235, 245, 0.18)',
+  gold: '#FFD60A',
+  green: '#30D158',
+  red: '#FF453A',
+  blue: '#0A84FF',
+  purple: '#BF5AF2',
+  orange: '#FF9F0A',
+  teal: '#64D2FF',
+}
+
+// ---- Types ----
 
 type GameState = 'idle' | 'matching' | 'matched' | 'picking' | 'flipping' | 'result'
 type CoinSide = 'heads' | 'tails'
-type Mood = 'hype' | 'celebration' | 'consolation' | 'anticipation' | 'tip'
 
 interface GameRecord {
   id: number
@@ -56,7 +65,7 @@ interface CompanionData {
   emoji_reaction: string
 }
 
-// ─── ErrorBoundary ──────────────────────────────────────────────────
+// ---- ErrorBoundary ----
 
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -72,13 +81,14 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-950 text-white">
+        <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: IOS.black, fontFamily: SF_FONT }}>
           <div className="text-center p-8 max-w-md">
-            <h2 className="text-xl font-semibold mb-2">Something went wrong</h2>
-            <p className="text-gray-400 mb-4 text-sm">{this.state.error}</p>
+            <h2 className="text-xl font-semibold mb-2 text-white">Something went wrong</h2>
+            <p className="mb-4 text-[15px]" style={{ color: IOS.secondaryLabel }}>{this.state.error}</p>
             <button
               onClick={() => this.setState({ hasError: false, error: '' })}
-              className="px-4 py-2 bg-amber-500 text-gray-950 rounded-md text-sm font-semibold"
+              className="px-6 py-3 rounded-2xl text-[15px] font-semibold text-white"
+              style={{ backgroundColor: IOS.blue }}
             >
               Try again
             </button>
@@ -90,56 +100,33 @@ class ErrorBoundary extends React.Component<
   }
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────
+// ---- Helpers ----
 
 function getMoodIcon(mood: string) {
   switch (mood) {
     case 'hype':
-      return <FaFire className="text-orange-400" />
+      return <IoFlame style={{ color: IOS.orange }} />
     case 'celebration':
-      return <FaGlassCheers className="text-green-400" />
+      return <IoSparkles style={{ color: IOS.green }} />
     case 'consolation':
-      return <FaHeart className="text-blue-400" />
+      return <IoHeart style={{ color: IOS.blue }} />
     case 'anticipation':
-      return <FaBinoculars className="text-purple-400" />
+      return <IoEye style={{ color: IOS.purple }} />
     case 'tip':
-      return <FaLightbulb className="text-yellow-400" />
+      return <IoBulb style={{ color: IOS.gold }} />
     default:
-      return <FaCoins className="text-amber-400" />
+      return <FaCoins style={{ color: IOS.gold }} />
   }
 }
 
-function getMoodBorderColor(mood: string) {
+function getMoodAccent(mood: string): string {
   switch (mood) {
-    case 'hype':
-      return 'border-orange-500/40'
-    case 'celebration':
-      return 'border-green-500/40'
-    case 'consolation':
-      return 'border-blue-500/40'
-    case 'anticipation':
-      return 'border-purple-500/40'
-    case 'tip':
-      return 'border-yellow-500/40'
-    default:
-      return 'border-amber-500/40'
-  }
-}
-
-function getMoodBgColor(mood: string) {
-  switch (mood) {
-    case 'hype':
-      return 'bg-orange-500/10'
-    case 'celebration':
-      return 'bg-green-500/10'
-    case 'consolation':
-      return 'bg-blue-500/10'
-    case 'anticipation':
-      return 'bg-purple-500/10'
-    case 'tip':
-      return 'bg-yellow-500/10'
-    default:
-      return 'bg-amber-500/10'
+    case 'hype': return IOS.orange
+    case 'celebration': return IOS.green
+    case 'consolation': return IOS.blue
+    case 'anticipation': return IOS.purple
+    case 'tip': return IOS.gold
+    default: return IOS.gold
   }
 }
 
@@ -151,9 +138,9 @@ function getRandomDelay(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
-// ─── Companion Panel ────────────────────────────────────────────────
+// ---- Companion Widget ----
 
-function CompanionPanel({
+function CompanionWidget({
   commentary,
   mood,
   emojiReaction,
@@ -164,48 +151,54 @@ function CompanionPanel({
   emojiReaction: string
   loading: boolean
 }) {
+  const accentColor = getMoodAccent(mood)
+
   return (
-    <div
-      className={`rounded-xl border ${getMoodBorderColor(mood)} ${getMoodBgColor(mood)} p-4 transition-all duration-500`}
-    >
+    <div className="rounded-2xl p-4" style={{ backgroundColor: IOS.gray6 }}>
+      <p className="text-[11px] font-semibold uppercase tracking-wider mb-3" style={{ color: IOS.tertiaryLabel }}>
+        AI Companion
+      </p>
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 mt-0.5 text-lg">{getMoodIcon(mood)}</div>
+        <div className="flex-shrink-0 mt-0.5 text-[18px]">{getMoodIcon(mood)}</div>
         <div className="flex-1 min-w-0">
           {loading ? (
-            <div className="flex items-center gap-1">
-              <span className="text-gray-400 text-sm italic">Thinking</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[15px] italic" style={{ color: IOS.secondaryLabel }}>Thinking</span>
               <span className="inline-flex gap-0.5">
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: IOS.tertiaryLabel, animationDelay: '0ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: IOS.tertiaryLabel, animationDelay: '150ms' }} />
+                <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: IOS.tertiaryLabel, animationDelay: '300ms' }} />
               </span>
             </div>
           ) : (
             <>
-              <p className="text-gray-200 text-sm leading-relaxed">{commentary || 'Ready for action!'}</p>
+              <p className="text-[15px] leading-relaxed text-white/90">{commentary || 'Ready for action!'}</p>
               {emojiReaction && (
-                <p className="text-xs text-gray-500 mt-1 italic">{emojiReaction}</p>
+                <p className="text-[13px] mt-1.5 italic" style={{ color: IOS.tertiaryLabel }}>{emojiReaction}</p>
               )}
             </>
           )}
         </div>
+        {/* Small accent dot */}
+        <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ backgroundColor: accentColor, opacity: 0.6 }} />
       </div>
     </div>
   )
 }
 
-// ─── Win Particles ──────────────────────────────────────────────────
+// ---- Win Particles (Refined) ----
 
 function WinParticles() {
   const [particles, setParticles] = useState<Array<{ id: number; x: number; color: string; delay: number; size: number }>>([])
 
   useEffect(() => {
-    const newParticles = Array.from({ length: 24 }, (_, i) => ({
+    const colors = [IOS.gold, '#FFFFFF', IOS.gold, '#FFFFFF', IOS.green, IOS.gold]
+    const newParticles = Array.from({ length: 16 }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
-      color: ['bg-amber-400', 'bg-green-400', 'bg-yellow-300', 'bg-purple-400', 'bg-pink-400', 'bg-blue-400'][Math.floor(Math.random() * 6)],
-      delay: Math.random() * 1000,
-      size: Math.random() * 6 + 4,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      delay: Math.random() * 800,
+      size: Math.random() * 4 + 3,
     }))
     setParticles(newParticles)
   }, [])
@@ -215,13 +208,14 @@ function WinParticles() {
       {particles.map((p) => (
         <div
           key={p.id}
-          className={`absolute rounded-sm ${p.color} opacity-80`}
+          className="absolute rounded-full opacity-70"
           style={{
             left: `${p.x}%`,
-            bottom: '-10px',
+            bottom: '-8px',
             width: `${p.size}px`,
             height: `${p.size}px`,
-            animation: `particleRise 2s ease-out ${p.delay}ms forwards`,
+            backgroundColor: p.color,
+            animation: `particleRise 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${p.delay}ms forwards`,
           }}
         />
       ))}
@@ -229,7 +223,7 @@ function WinParticles() {
   )
 }
 
-// ─── Coin Component ─────────────────────────────────────────────────
+// ---- Coin Component ----
 
 function CoinDisplay({
   flipping,
@@ -243,35 +237,34 @@ function CoinDisplay({
   return (
     <div className="flex items-center justify-center" style={{ perspective: '600px' }}>
       <div
-        className="relative w-28 h-28 md:w-32 md:h-32"
+        className="relative w-[104px] h-[104px] md:w-[120px] md:h-[120px]"
         style={{
           transformStyle: 'preserve-3d',
           transition: flipping ? 'none' : 'transform 0.3s ease',
-          animation: flipping ? `coinSpin 2.5s cubic-bezier(0.22,1,0.36,1) forwards` : 'none',
-          // Use CSS custom property for final rotation
+          animation: flipping ? `coinSpin 2.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards` : 'none',
           ...(flipping ? { '--coin-final': `${finalRotation}deg` } as React.CSSProperties : {}),
           transform: !flipping && result ? `rotateY(${result === 'tails' ? 180 : 0}deg)` : 'rotateY(0deg)',
         }}
       >
         {/* Front - Heads */}
         <div
-          className="absolute inset-0 rounded-full flex items-center justify-center text-3xl md:text-4xl font-extrabold text-white shadow-lg shadow-amber-500/30"
+          className="absolute inset-0 rounded-full flex items-center justify-center text-[32px] md:text-[36px] font-bold text-black"
           style={{
             backfaceVisibility: 'hidden',
-            background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
-            border: '3px solid #fbbf24',
+            background: `linear-gradient(145deg, ${IOS.gold} 0%, #E8C200 40%, #B8960A 100%)`,
+            boxShadow: `0 4px 24px ${IOS.gold}33, inset 0 1px 1px rgba(255,255,255,0.3)`,
           }}
         >
           H
         </div>
         {/* Back - Tails */}
         <div
-          className="absolute inset-0 rounded-full flex items-center justify-center text-3xl md:text-4xl font-extrabold text-white shadow-lg shadow-amber-700/30"
+          className="absolute inset-0 rounded-full flex items-center justify-center text-[32px] md:text-[36px] font-bold text-black"
           style={{
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)',
-            background: 'linear-gradient(135deg, #d97706 0%, #b45309 50%, #92400e 100%)',
-            border: '3px solid #d97706',
+            background: `linear-gradient(145deg, #E8C200 0%, #B8960A 40%, #8B7008 100%)`,
+            boxShadow: `0 4px 24px ${IOS.gold}22, inset 0 1px 1px rgba(255,255,255,0.2)`,
           }}
         >
           T
@@ -281,43 +274,58 @@ function CoinDisplay({
   )
 }
 
-// ─── Game History Panel ─────────────────────────────────────────────
+// ---- Game History (iOS List Style) ----
 
-function GameHistoryPanel({ history }: { history: GameRecord[] }) {
+function GameHistoryList({ history }: { history: GameRecord[] }) {
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="rounded-xl border border-gray-700/50 bg-gray-800/40 overflow-hidden">
+    <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: IOS.gray6 }}>
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-3 text-sm text-gray-300 hover:bg-gray-700/30 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 active:opacity-70 transition-opacity duration-150"
       >
-        <span className="font-medium">Game History ({history.length})</span>
-        {expanded ? <FaChevronUp className="text-gray-500" /> : <FaChevronDown className="text-gray-500" />}
+        <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: IOS.tertiaryLabel }}>
+          Recent Games ({history.length})
+        </span>
+        {expanded ? (
+          <HiChevronUp className="text-[16px]" style={{ color: IOS.tertiaryLabel }} />
+        ) : (
+          <HiChevronDown className="text-[16px]" style={{ color: IOS.tertiaryLabel }} />
+        )}
       </button>
       {expanded && (
-        <div className="border-t border-gray-700/50 max-h-60 overflow-y-auto">
+        <div className="max-h-60 overflow-y-auto">
           {history.length === 0 ? (
-            <p className="text-center text-gray-500 text-sm py-4">No games yet</p>
+            <p className="text-center text-[15px] py-6" style={{ color: IOS.tertiaryLabel }}>No games yet</p>
           ) : (
-            <div className="divide-y divide-gray-700/30">
-              {history.map((game) => (
-                <div key={game.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                  <div className="flex items-center gap-2">
+            <div>
+              {history.map((game, idx) => (
+                <div
+                  key={game.id}
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{ borderTop: idx > 0 ? `0.5px solid rgba(255,255,255,0.05)` : 'none' }}
+                >
+                  <div className="flex items-center gap-3">
                     <span
-                      className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${game.result === 'win' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}
+                      className="w-7 h-7 flex items-center justify-center rounded-full text-[11px] font-bold"
+                      style={{
+                        backgroundColor: game.result === 'win' ? `${IOS.green}20` : `${IOS.red}20`,
+                        color: game.result === 'win' ? IOS.green : IOS.red,
+                      }}
                     >
                       {game.result === 'win' ? 'W' : 'L'}
                     </span>
-                    <span className="text-gray-300">vs {game.opponent}</span>
+                    <span className="text-[15px] text-white/80">vs {game.opponent}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span
-                      className={`font-mono text-xs font-semibold ${game.result === 'win' ? 'text-green-400' : 'text-red-400'}`}
+                      className="font-mono text-[13px] font-semibold"
+                      style={{ color: game.result === 'win' ? IOS.green : IOS.red }}
                     >
                       {game.result === 'win' ? '+$0.95' : '-$1.00'}
                     </span>
-                    <span className="text-gray-600 text-xs">{game.timestamp}</span>
+                    <span className="text-[11px]" style={{ color: IOS.tertiaryLabel }}>{game.timestamp}</span>
                   </div>
                 </div>
               ))}
@@ -329,23 +337,56 @@ function GameHistoryPanel({ history }: { history: GameRecord[] }) {
   )
 }
 
-// ─── Agent Status ───────────────────────────────────────────────────
+// ---- Agent Status ----
 
-function AgentStatusPanel({ active }: { active: boolean }) {
+function AgentStatus({ active }: { active: boolean }) {
   return (
-    <div className="rounded-xl border border-gray-700/50 bg-gray-800/40 p-3">
-      <div className="flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${active ? 'bg-green-400 animate-pulse' : 'bg-gray-600'}`} />
-          <span className="text-gray-400">CoinFlip Companion AI</span>
+    <div className="rounded-2xl px-4 py-3" style={{ backgroundColor: IOS.gray6 }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-2 h-2 rounded-full"
+            style={{
+              backgroundColor: active ? IOS.green : IOS.gray3,
+              boxShadow: active ? `0 0 6px ${IOS.green}66` : 'none',
+            }}
+          />
+          <span className="text-[13px]" style={{ color: IOS.secondaryLabel }}>CoinFlip Companion AI</span>
         </div>
-        <span className="text-gray-600 font-mono">{active ? 'Active' : 'Idle'}</span>
+        <span className="text-[11px] font-mono" style={{ color: IOS.tertiaryLabel }}>
+          {active ? 'Active' : 'Idle'}
+        </span>
       </div>
     </div>
   )
 }
 
-// ─── Main Page ──────────────────────────────────────────────────────
+// ---- Stats Widget Row ----
+
+function StatsRow({ totalGames, winRate, netProfit }: { totalGames: number; winRate: number; netProfit: number }) {
+  return (
+    <div className="grid grid-cols-3 gap-2.5">
+      <div className="rounded-2xl p-3 text-center" style={{ backgroundColor: IOS.gray6 }}>
+        <p className="text-[11px] font-medium uppercase tracking-wider mb-1" style={{ color: IOS.tertiaryLabel }}>Games</p>
+        <p className="text-[22px] font-bold text-white">{totalGames}</p>
+      </div>
+      <div className="rounded-2xl p-3 text-center" style={{ backgroundColor: IOS.gray6 }}>
+        <p className="text-[11px] font-medium uppercase tracking-wider mb-1" style={{ color: IOS.tertiaryLabel }}>Win Rate</p>
+        <p className="text-[22px] font-bold" style={{ color: winRate >= 50 ? IOS.green : winRate > 0 ? IOS.red : 'white' }}>
+          {winRate}%
+        </p>
+      </div>
+      <div className="rounded-2xl p-3 text-center" style={{ backgroundColor: IOS.gray6 }}>
+        <p className="text-[11px] font-medium uppercase tracking-wider mb-1" style={{ color: IOS.tertiaryLabel }}>Net P/L</p>
+        <p className="text-[22px] font-bold font-mono" style={{ color: netProfit >= 0 ? IOS.green : IOS.red }}>
+          {netProfit >= 0 ? '+' : ''}{netProfit.toFixed(2)}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ---- Main Page ----
 
 export default function Page() {
   // Game state
@@ -373,11 +414,14 @@ export default function Page() {
   // Streak tracking
   const [winStreak, setWinStreak] = useState(0)
 
+  // Balance animation
+  const [balanceBump, setBalanceBump] = useState(false)
+
   // Timers ref
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const autoResetRef = useRef<NodeJS.Timeout | null>(null)
 
-  // ─── AI Agent Call ─────────────────────────────────────────────
+  // ---- AI Agent Call ----
 
   const callCompanion = useCallback(async (message: string) => {
     setCompanionLoading(true)
@@ -407,7 +451,7 @@ export default function Page() {
     }
   }, [])
 
-  // ─── Cleanup timers ───────────────────────────────────────────
+  // ---- Cleanup timers ----
 
   useEffect(() => {
     return () => {
@@ -416,7 +460,7 @@ export default function Page() {
     }
   }, [])
 
-  // ─── Welcome message on load ─────────────────────────────────
+  // ---- Welcome message on load ----
 
   useEffect(() => {
     callCompanion(
@@ -425,7 +469,16 @@ export default function Page() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ─── Game Flow Functions ──────────────────────────────────────
+  // ---- Balance bump animation ----
+
+  useEffect(() => {
+    if (balanceBump) {
+      const t = setTimeout(() => setBalanceBump(false), 400)
+      return () => clearTimeout(t)
+    }
+  }, [balanceBump])
+
+  // ---- Game Flow Functions ----
 
   const startMatchmaking = () => {
     if (balance < 1) return
@@ -444,7 +497,6 @@ export default function Page() {
 
       callCompanion(`Player matched against ${opp}! Hype up the duel! Balance: $${balance.toFixed(2)}.`)
 
-      // Auto-transition to picking after 1.5s
       timerRef.current = setTimeout(() => {
         setGameState('picking')
       }, 1500)
@@ -461,16 +513,15 @@ export default function Page() {
     setGameState('flipping')
     setIsFlipping(true)
 
-    // Determine random result
     const landed: CoinSide = Math.random() < 0.5 ? 'heads' : 'tails'
     setFlipResult(landed)
 
-    // After animation completes (2.5s), show result
     timerRef.current = setTimeout(() => {
       setIsFlipping(false)
       const won = side === landed
       setDidWin(won)
       setGameState('result')
+      setBalanceBump(true)
 
       if (won) {
         setBalance((prev) => parseFloat((prev + 0.95).toFixed(2)))
@@ -523,7 +574,6 @@ export default function Page() {
         )
       }
 
-      // Auto-return to idle after 5s
       autoResetRef.current = setTimeout(() => {
         setGameState('idle')
       }, 5000)
@@ -535,245 +585,296 @@ export default function Page() {
     setGameState('idle')
   }
 
-  // ─── Stats ────────────────────────────────────────────────────
+  // ---- Stats ----
 
   const totalGames = wins + losses
   const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0
   const netProfit = parseFloat((balance - 10.0).toFixed(2))
 
-  // ─── Render ───────────────────────────────────────────────────
+  // ---- Render ----
 
   return (
     <ErrorBoundary>
-      {/* Inline keyframes via a hidden style tag alternative: using a global-safe technique */}
       <div
-        className="min-h-screen bg-gradient-to-b from-gray-950 via-indigo-950/50 to-gray-950 text-white flex flex-col"
-        style={{
-          // @ts-ignore -- injecting keyframes via CSS custom property trick
-        }}
+        className="min-h-screen flex flex-col text-white"
+        style={{ backgroundColor: IOS.black, fontFamily: SF_FONT }}
       >
-        {/* CSS Keyframes injected via dangerouslySetInnerHTML on a noscript-like workaround */}
-        {/* We use Tailwind animate classes + inline styles instead to avoid <style> tags */}
-
-        {/* ─── Header ───────────────────────────────────────────── */}
-        <header className="flex items-center justify-between px-4 py-3 bg-gray-900/80 border-b border-gray-800/50 backdrop-blur-md sticky top-0 z-50">
-          <div className="flex items-center gap-2">
-            <FaCoins className="text-amber-400 text-xl" />
-            <h1 className="text-lg font-bold bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-transparent">
-              CoinFlip Duel
-            </h1>
+        {/* ---- Frosted Header (iOS Nav Bar) ---- */}
+        <header
+          className="flex items-center justify-between px-5 sticky top-0 z-50 backdrop-blur-2xl"
+          style={{
+            height: '56px',
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            boxShadow: '0 1px 0 rgba(255,255,255,0.05)',
+          }}
+        >
+          <div className="flex items-center gap-2.5">
+            <FaCoins className="text-[20px]" style={{ color: IOS.gold }} />
+            <h1 className="text-[17px] font-semibold text-white">CoinFlip Duel</h1>
           </div>
-          <div className="flex items-center gap-4 text-sm">
-            <div className="flex items-center gap-1.5">
-              <FaWallet className="text-amber-400 text-xs" />
-              <span
-                className={`font-mono font-bold transition-colors duration-500 ${balance >= 10 ? 'text-green-400' : balance >= 5 ? 'text-amber-400' : 'text-red-400'}`}
-              >
-                ${balance.toFixed(2)}
-              </span>
-            </div>
-            <div className="hidden sm:flex items-center gap-3 text-xs text-gray-400">
-              <span className="flex items-center gap-1">
-                <FaTrophy className="text-green-400" /> {wins}
-              </span>
-              <span className="flex items-center gap-1">
-                <FaSkull className="text-red-400" /> {losses}
-              </span>
-            </div>
-            {/* Mobile W/L */}
-            <div className="sm:hidden flex items-center gap-2 text-xs text-gray-400">
-              <span className="text-green-400">{wins}W</span>
-              <span className="text-red-400">{losses}L</span>
-            </div>
+
+          {/* Balance Pill */}
+          <div
+            className="flex items-center gap-2 rounded-full px-3.5 py-1.5 transition-transform duration-300"
+            style={{
+              backgroundColor: IOS.gray6,
+              transform: balanceBump ? 'scale(1.1)' : 'scale(1)',
+            }}
+          >
+            <IoWallet className="text-[14px]" style={{ color: IOS.gold }} />
+            <span
+              className="font-mono font-bold text-[15px] transition-colors duration-500"
+              style={{
+                color: balance >= 10 ? IOS.green : balance >= 5 ? IOS.gold : IOS.red,
+              }}
+            >
+              ${balance.toFixed(2)}
+            </span>
           </div>
         </header>
 
-        {/* ─── Main Content ─────────────────────────────────────── */}
-        <main className="flex-1 flex flex-col items-center justify-start px-4 py-6 overflow-y-auto">
-          <div className="w-full max-w-lg space-y-5">
+        {/* ---- Main Content ---- */}
+        <main className="flex-1 flex flex-col items-center justify-start px-4 py-5 overflow-y-auto">
+          <div className="w-full max-w-lg space-y-4">
 
-            {/* ─── Game Area ────────────────────────────────────── */}
-            <div className="relative rounded-2xl border border-gray-700/50 bg-gray-900/60 backdrop-blur-sm overflow-hidden">
-
+            {/* ---- Game Area Card ---- */}
+            <div
+              className="relative rounded-2xl overflow-hidden"
+              style={{
+                backgroundColor: IOS.gray6,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+              }}
+            >
               {/* Win particles overlay */}
               {gameState === 'result' && didWin && <WinParticles />}
 
               <div className="p-6 space-y-6">
 
-                {/* ── STATE: IDLE ─────────────────────────────── */}
+                {/* -- STATE: IDLE -- */}
                 {gameState === 'idle' && (
-                  <div className="text-center space-y-5">
-                    <div className="space-y-2">
-                      <FaDice className="text-5xl text-amber-400/60 mx-auto" />
-                      <p className="text-gray-400 text-sm">Tap to find an opponent</p>
+                  <div className="text-center space-y-6">
+                    <div className="space-y-3">
+                      <IoDice className="text-[48px] mx-auto" style={{ color: IOS.tertiaryLabel }} />
+                      <p className="text-[15px]" style={{ color: IOS.secondaryLabel }}>
+                        Tap to find an opponent
+                      </p>
                     </div>
 
+                    {/* PLAY Button - iOS Hero CTA */}
                     <button
                       onClick={startMatchmaking}
                       disabled={balance < 1}
-                      className={`relative w-full max-w-xs mx-auto min-h-[56px] rounded-xl font-bold text-lg transition-all duration-300 ${
-                        balance < 1
-                          ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                          : 'bg-gradient-to-r from-amber-500 to-amber-600 text-gray-950 hover:from-amber-400 hover:to-amber-500 hover:shadow-lg hover:shadow-amber-500/25 active:scale-95'
-                      }`}
-                      style={
-                        balance >= 1
-                          ? {
-                              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                            }
-                          : undefined
-                      }
+                      className="relative w-full max-w-xs mx-auto flex items-center justify-center gap-2.5 rounded-2xl font-bold text-[17px] transition-transform duration-150 active:scale-[0.97]"
+                      style={{
+                        height: '56px',
+                        backgroundColor: balance < 1 ? IOS.gray4 : IOS.gold,
+                        color: balance < 1 ? IOS.tertiaryLabel : '#000000',
+                        cursor: balance < 1 ? 'not-allowed' : 'pointer',
+                        boxShadow: balance >= 1 ? `0 4px 20px ${IOS.gold}33` : 'none',
+                      }}
                     >
-                      <span className="flex items-center justify-center gap-2">
-                        <FaCoins /> PLAY $1
-                      </span>
+                      <FaCoins className="text-[18px]" />
+                      <span>PLAY $1</span>
                     </button>
 
                     {balance < 1 && (
-                      <p className="text-red-400 text-xs">Insufficient balance</p>
+                      <p className="text-[13px]" style={{ color: IOS.red }}>Insufficient balance</p>
                     )}
-
-                    {/* Quick Stats */}
-                    <div className="grid grid-cols-3 gap-3 text-center pt-2">
-                      <div className="rounded-lg bg-gray-800/50 p-3">
-                        <p className="text-xs text-gray-500">Games</p>
-                        <p className="text-lg font-bold text-gray-200">{totalGames}</p>
-                      </div>
-                      <div className="rounded-lg bg-gray-800/50 p-3">
-                        <p className="text-xs text-gray-500">Win Rate</p>
-                        <p className={`text-lg font-bold ${winRate >= 50 ? 'text-green-400' : winRate > 0 ? 'text-red-400' : 'text-gray-400'}`}>
-                          {winRate}%
-                        </p>
-                      </div>
-                      <div className="rounded-lg bg-gray-800/50 p-3">
-                        <p className="text-xs text-gray-500">Net P/L</p>
-                        <p className={`text-lg font-bold font-mono ${netProfit >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {netProfit >= 0 ? '+' : ''}${netProfit.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
 
                     {/* Win streak badge */}
                     {winStreak >= 2 && (
-                      <div className="inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-full px-3 py-1 text-xs font-semibold">
-                        <FaFire /> {winStreak} Win Streak!
+                      <div
+                        className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-semibold"
+                        style={{
+                          backgroundColor: `${IOS.purple}18`,
+                          color: IOS.purple,
+                        }}
+                      >
+                        <IoFlame className="text-[14px]" />
+                        <span>{winStreak} Win Streak</span>
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* ── STATE: MATCHING ────────────────────────── */}
+                {/* -- STATE: MATCHING -- */}
                 {gameState === 'matching' && (
-                  <div className="text-center space-y-6 py-4">
-                    {/* Radar-like search animation */}
-                    <div className="relative w-32 h-32 mx-auto">
-                      <div className="absolute inset-0 rounded-full border-2 border-purple-500/20" />
-                      <div className="absolute inset-3 rounded-full border-2 border-purple-500/30" />
-                      <div className="absolute inset-6 rounded-full border-2 border-purple-500/40" />
+                  <div className="text-center space-y-6 py-2">
+                    {/* Concentric rings animation */}
+                    <div className="relative w-[128px] h-[128px] mx-auto">
                       <div
-                        className="absolute inset-0 rounded-full border-t-2 border-purple-400"
-                        style={{ animation: 'spin 1.5s linear infinite' }}
+                        className="absolute inset-0 rounded-full"
+                        style={{ border: `2px solid ${IOS.purple}15` }}
+                      />
+                      <div
+                        className="absolute inset-3 rounded-full"
+                        style={{ border: `2px solid ${IOS.purple}25` }}
+                      />
+                      <div
+                        className="absolute inset-6 rounded-full"
+                        style={{ border: `2px solid ${IOS.purple}35` }}
+                      />
+                      <div
+                        className="absolute inset-0 rounded-full"
+                        style={{
+                          borderTop: `2px solid ${IOS.purple}`,
+                          borderRight: '2px solid transparent',
+                          borderBottom: '2px solid transparent',
+                          borderLeft: '2px solid transparent',
+                          animation: 'spin 1.2s linear infinite',
+                        }}
+                      />
+                      <div
+                        className="absolute inset-4 rounded-full"
+                        style={{
+                          borderTop: '2px solid transparent',
+                          borderRight: `2px solid ${IOS.teal}`,
+                          borderBottom: '2px solid transparent',
+                          borderLeft: '2px solid transparent',
+                          animation: 'spin 1.8s linear infinite reverse',
+                        }}
                       />
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <FaDice className="text-3xl text-purple-400 animate-pulse" />
+                        <IoDice className="text-[28px] animate-pulse" style={{ color: IOS.purple }} />
                       </div>
                     </div>
 
                     <div>
-                      <p className="text-lg font-semibold text-gray-200">Finding opponent</p>
-                      <p className="text-sm text-gray-500 flex items-center justify-center gap-0.5 mt-1">
+                      <p className="text-[17px] font-semibold text-white">Finding Opponent</p>
+                      <p className="text-[13px] flex items-center justify-center gap-0.5 mt-1.5" style={{ color: IOS.tertiaryLabel }}>
                         Searching
                         <span className="inline-flex gap-0.5 ml-0.5">
-                          <span className="w-1 h-1 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                          <span className="w-1 h-1 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
-                          <span className="w-1 h-1 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
+                          <span className="w-1 h-1 rounded-full animate-bounce" style={{ backgroundColor: IOS.tertiaryLabel, animationDelay: '0ms' }} />
+                          <span className="w-1 h-1 rounded-full animate-bounce" style={{ backgroundColor: IOS.tertiaryLabel, animationDelay: '200ms' }} />
+                          <span className="w-1 h-1 rounded-full animate-bounce" style={{ backgroundColor: IOS.tertiaryLabel, animationDelay: '400ms' }} />
                         </span>
                       </p>
                     </div>
 
                     {/* Player vs ? */}
-                    <div className="flex items-center justify-center gap-6">
+                    <div className="flex items-center justify-center gap-8">
                       <div className="text-center">
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-lg font-bold border-2 border-indigo-400/50">
+                        <div
+                          className="w-14 h-14 rounded-full flex items-center justify-center text-[15px] font-bold text-white"
+                          style={{
+                            background: `linear-gradient(145deg, ${IOS.blue}, ${IOS.purple})`,
+                            boxShadow: `0 4px 12px ${IOS.blue}33`,
+                          }}
+                        >
                           You
                         </div>
-                        <p className="text-xs text-gray-400 mt-1">Player</p>
+                        <p className="text-[11px] mt-1.5" style={{ color: IOS.secondaryLabel }}>Player</p>
                       </div>
-                      <span className="text-gray-600 text-sm font-bold">VS</span>
+                      <span className="text-[13px] font-semibold" style={{ color: IOS.tertiaryLabel }}>VS</span>
                       <div className="text-center">
-                        <div className="w-14 h-14 rounded-full bg-gray-700/50 flex items-center justify-center text-2xl font-bold text-gray-500 border-2 border-gray-600/50 animate-pulse">
+                        <div
+                          className="w-14 h-14 rounded-full flex items-center justify-center text-[22px] font-bold animate-pulse"
+                          style={{
+                            backgroundColor: IOS.gray4,
+                            color: IOS.tertiaryLabel,
+                          }}
+                        >
                           ?
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Opponent</p>
+                        <p className="text-[11px] mt-1.5" style={{ color: IOS.tertiaryLabel }}>Opponent</p>
                       </div>
                     </div>
 
                     <button
                       onClick={cancelMatchmaking}
-                      className="text-sm text-gray-500 hover:text-gray-300 transition-colors underline underline-offset-2"
+                      className="text-[13px] transition-opacity duration-150 active:opacity-50"
+                      style={{ color: IOS.secondaryLabel }}
                     >
                       Cancel
                     </button>
                   </div>
                 )}
 
-                {/* ── STATE: MATCHED ─────────────────────────── */}
+                {/* -- STATE: MATCHED -- */}
                 {gameState === 'matched' && (
-                  <div className="text-center space-y-5 py-4">
-                    <p className="text-xs uppercase tracking-widest text-gray-500 font-semibold">Opponent Found!</p>
+                  <div className="text-center space-y-6 py-2">
+                    <p
+                      className="text-[11px] font-semibold uppercase tracking-widest"
+                      style={{ color: IOS.green }}
+                    >
+                      Opponent Found
+                    </p>
 
-                    <div className="flex items-center justify-center gap-6">
+                    <div className="flex items-center justify-center gap-8">
                       <div className="text-center">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xl font-bold border-2 border-indigo-400/50 shadow-lg shadow-indigo-500/20">
+                        <div
+                          className="w-16 h-16 rounded-full flex items-center justify-center text-[17px] font-bold text-white"
+                          style={{
+                            background: `linear-gradient(145deg, ${IOS.blue}, ${IOS.purple})`,
+                            boxShadow: `0 6px 16px ${IOS.blue}33`,
+                          }}
+                        >
                           You
                         </div>
-                        <p className="text-sm text-gray-300 mt-2 font-medium">Player</p>
+                        <p className="text-[15px] text-white font-medium mt-2">Player</p>
                       </div>
 
                       <div className="relative">
                         <span
-                          className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-300 to-amber-600"
-                          style={{
-                            textShadow: '0 0 30px rgba(245, 158, 11, 0.3)',
-                          }}
+                          className="text-[17px] font-bold"
+                          style={{ color: IOS.secondaryLabel }}
                         >
                           VS
                         </span>
-                        <div className="absolute -inset-2 bg-amber-500/10 rounded-full blur-xl" />
                       </div>
 
                       <div className="text-center">
-                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center text-xl font-bold border-2 border-red-400/50 shadow-lg shadow-red-500/20">
+                        <div
+                          className="w-16 h-16 rounded-full flex items-center justify-center text-[17px] font-bold text-white"
+                          style={{
+                            background: `linear-gradient(145deg, ${IOS.red}, ${IOS.orange})`,
+                            boxShadow: `0 6px 16px ${IOS.red}33`,
+                          }}
+                        >
                           {opponent.charAt(0)}
                         </div>
-                        <p className="text-sm text-gray-300 mt-2 font-medium">{opponent}</p>
+                        <p className="text-[15px] text-white font-medium mt-2">{opponent}</p>
                       </div>
                     </div>
 
-                    <p className="text-gray-500 text-xs animate-pulse">Get ready...</p>
+                    <p className="text-[13px] animate-pulse" style={{ color: IOS.tertiaryLabel }}>
+                      Get ready...
+                    </p>
                   </div>
                 )}
 
-                {/* ── STATE: PICKING ──────────────────────────── */}
+                {/* -- STATE: PICKING -- */}
                 {gameState === 'picking' && (
-                  <div className="text-center space-y-5 py-4">
-                    <p className="text-sm text-gray-400">Make your call!</p>
-                    <p className="text-xs text-gray-600">
-                      vs <span className="text-gray-400 font-medium">{opponent}</span>
-                    </p>
+                  <div className="text-center space-y-6 py-2">
+                    <div>
+                      <p className="text-[17px] font-semibold text-white">Make Your Call</p>
+                      <p className="text-[13px] mt-1" style={{ color: IOS.tertiaryLabel }}>
+                        vs <span className="text-white/70 font-medium">{opponent}</span>
+                      </p>
+                    </div>
 
                     <CoinDisplay flipping={false} result={null} />
 
                     <div className="flex gap-3 justify-center">
                       <button
                         onClick={() => pickSide('heads')}
-                        className="flex-1 max-w-[140px] min-h-[56px] rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 text-gray-950 font-bold text-lg hover:from-amber-400 hover:to-amber-500 active:scale-95 transition-all shadow-lg shadow-amber-500/20"
+                        className="flex-1 max-w-[150px] rounded-full font-bold text-[17px] text-black transition-transform duration-150 active:scale-[0.97]"
+                        style={{
+                          height: '52px',
+                          backgroundColor: IOS.gold,
+                          boxShadow: `0 4px 16px ${IOS.gold}33`,
+                        }}
                       >
                         Heads
                       </button>
                       <button
                         onClick={() => pickSide('tails')}
-                        className="flex-1 max-w-[140px] min-h-[56px] rounded-xl bg-gradient-to-br from-amber-700 to-amber-800 text-amber-100 font-bold text-lg hover:from-amber-600 hover:to-amber-700 active:scale-95 transition-all shadow-lg shadow-amber-700/20"
+                        className="flex-1 max-w-[150px] rounded-full font-bold text-[17px] text-white transition-transform duration-150 active:scale-[0.97]"
+                        style={{
+                          height: '52px',
+                          backgroundColor: IOS.gray4,
+                          boxShadow: `0 4px 16px rgba(0,0,0,0.3)`,
+                        }}
                       >
                         Tails
                       </button>
@@ -781,75 +882,93 @@ export default function Page() {
                   </div>
                 )}
 
-                {/* ── STATE: FLIPPING ────────────────────────── */}
+                {/* -- STATE: FLIPPING -- */}
                 {gameState === 'flipping' && (
-                  <div className="text-center space-y-5 py-4">
-                    <p className="text-xs text-gray-500">
+                  <div className="text-center space-y-6 py-2">
+                    <p className="text-[13px]" style={{ color: IOS.tertiaryLabel }}>
                       You called:{' '}
-                      <span className="text-amber-400 font-semibold uppercase">{playerCall}</span>
+                      <span className="font-semibold uppercase" style={{ color: IOS.gold }}>{playerCall}</span>
                     </p>
 
                     <CoinDisplay flipping={isFlipping} result={flipResult} />
 
-                    <p className="text-sm text-gray-400 animate-pulse">Flipping...</p>
+                    <p className="text-[15px] animate-pulse" style={{ color: IOS.secondaryLabel }}>
+                      Flipping...
+                    </p>
                   </div>
                 )}
 
-                {/* ── STATE: RESULT ───────────────────────────── */}
+                {/* -- STATE: RESULT -- */}
                 {gameState === 'result' && (
-                  <div className="text-center space-y-5 py-4 relative">
-                    {/* Result glow */}
+                  <div className="text-center space-y-5 py-2 relative">
+                    {/* Subtle ambient glow */}
                     <div
-                      className={`absolute inset-0 rounded-2xl opacity-20 blur-3xl pointer-events-none ${
-                        didWin ? 'bg-green-500' : 'bg-red-500'
-                      }`}
+                      className="absolute inset-0 rounded-2xl pointer-events-none"
+                      style={{
+                        background: didWin
+                          ? `radial-gradient(circle at 50% 50%, ${IOS.green}12 0%, transparent 70%)`
+                          : `radial-gradient(circle at 50% 50%, ${IOS.red}08 0%, transparent 70%)`,
+                      }}
                     />
 
-                    <div className="relative z-10 space-y-4">
-                      <p className="text-xs text-gray-500">
-                        You called:{' '}
-                        <span className="text-amber-400 font-semibold uppercase">{playerCall}</span>
-                        {' | '}
+                    <div className="relative z-10 space-y-5">
+                      <p className="text-[13px]" style={{ color: IOS.tertiaryLabel }}>
+                        Called:{' '}
+                        <span className="font-semibold uppercase" style={{ color: IOS.gold }}>{playerCall}</span>
+                        {' / '}
                         Landed:{' '}
-                        <span className="text-amber-300 font-semibold uppercase">{flipResult}</span>
+                        <span className="font-semibold uppercase text-white/80">{flipResult}</span>
                       </p>
 
                       <CoinDisplay flipping={false} result={flipResult} />
 
                       {didWin ? (
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-center gap-2">
-                            <FaTrophy className="text-amber-400 text-2xl" />
-                            <h2 className="text-3xl font-black text-green-400">YOU WIN!</h2>
-                            <FaTrophy className="text-amber-400 text-2xl" />
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-center gap-2.5">
+                            <HiMiniTrophy className="text-[24px]" style={{ color: IOS.gold }} />
+                            <h2 className="text-[34px] font-bold tracking-tight" style={{ color: IOS.green }}>
+                              YOU WIN
+                            </h2>
+                            <HiMiniTrophy className="text-[24px]" style={{ color: IOS.gold }} />
                           </div>
-                          <p className="text-green-400 font-bold text-xl font-mono">+$0.95</p>
-                          <p className="text-gray-500 text-xs">
+                          <p className="font-mono font-bold text-[28px]" style={{ color: IOS.green }}>
+                            +$0.95
+                          </p>
+                          <p className="text-[13px]" style={{ color: IOS.tertiaryLabel }}>
                             vs {opponent}
                           </p>
                         </div>
                       ) : (
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-center gap-2">
-                            <FaSkull className="text-red-400 text-xl" />
-                            <h2 className="text-2xl font-bold text-red-400">YOU LOSE</h2>
-                            <FaSkull className="text-red-400 text-xl" />
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-center gap-2.5">
+                            <IoSkull className="text-[20px]" style={{ color: IOS.red }} />
+                            <h2 className="text-[28px] font-bold tracking-tight" style={{ color: IOS.red }}>
+                              YOU LOSE
+                            </h2>
+                            <IoSkull className="text-[20px]" style={{ color: IOS.red }} />
                           </div>
-                          <p className="text-red-400 font-bold text-lg font-mono">-$1.00</p>
-                          <p className="text-gray-500 text-xs">
-                            vs {opponent} -- Better luck next time!
+                          <p className="font-mono font-bold text-[24px]" style={{ color: IOS.red }}>
+                            -$1.00
+                          </p>
+                          <p className="text-[13px]" style={{ color: IOS.tertiaryLabel }}>
+                            vs {opponent} -- Better luck next time
                           </p>
                         </div>
                       )}
 
                       <button
                         onClick={playAgain}
-                        className="min-h-[48px] px-8 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold hover:from-indigo-400 hover:to-purple-500 active:scale-95 transition-all shadow-lg shadow-indigo-500/20"
+                        className="w-full max-w-xs mx-auto flex items-center justify-center rounded-2xl font-bold text-[17px] text-white transition-transform duration-150 active:scale-[0.97]"
+                        style={{
+                          height: '52px',
+                          backgroundColor: IOS.blue,
+                          boxShadow: `0 4px 16px ${IOS.blue}33`,
+                        }}
                       >
                         PLAY AGAIN
                       </button>
 
-                      <p className="text-gray-600 text-xs">
+                      <p className="text-[11px]" style={{ color: IOS.tertiaryLabel }}>
                         Auto-continuing in a few seconds...
                       </p>
                     </div>
@@ -858,24 +977,29 @@ export default function Page() {
               </div>
             </div>
 
-            {/* ─── Companion Panel ──────────────────────────────── */}
-            <CompanionPanel
+            {/* ---- Stats Widget Row ---- */}
+            <StatsRow totalGames={totalGames} winRate={winRate} netProfit={netProfit} />
+
+            {/* ---- Companion Widget ---- */}
+            <CompanionWidget
               commentary={companionData.commentary}
               mood={companionData.mood}
               emojiReaction={companionData.emoji_reaction}
               loading={companionLoading}
             />
 
-            {/* ─── Game History ──────────────────────────────────── */}
-            <GameHistoryPanel history={gameHistory} />
+            {/* ---- Game History ---- */}
+            <GameHistoryList history={gameHistory} />
 
-            {/* ─── Agent Status ──────────────────────────────────── */}
-            <AgentStatusPanel active={agentActive} />
+            {/* ---- Agent Status ---- */}
+            <AgentStatus active={agentActive} />
+
+            {/* Bottom spacer for safe area */}
+            <div className="h-4" />
           </div>
         </main>
 
-        {/* ─── CSS Keyframes via inline style attribute on an empty div ─── */}
-        {/* Using a portal-safe approach: a zero-size div with inline animation keyframes */}
+        {/* ---- CSS Keyframes injection ---- */}
         <div
           aria-hidden="true"
           className="fixed pointer-events-none"
@@ -896,10 +1020,10 @@ export default function Page() {
                 @keyframes particleRise {
                   0% {
                     transform: translateY(0) rotate(0deg) scale(1);
-                    opacity: 1;
+                    opacity: 0.7;
                   }
                   100% {
-                    transform: translateY(-400px) rotate(720deg) scale(0);
+                    transform: translateY(-350px) rotate(540deg) scale(0);
                     opacity: 0;
                   }
                 }
