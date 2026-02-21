@@ -1,0 +1,17 @@
+{
+  "agent_name": "CoinFlip Companion",
+  "agent_id": "699a0c496c4c5162bafb2ba1",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "schema": {
+    "commentary": "string - Short entertaining commentary about the game event",
+    "mood": "string - The mood/tone: hype, celebration, consolation, anticipation, tip",
+    "emoji_reaction": "string - A text description of a reaction icon to display"
+  },
+  "sample_response": {
+    "commentary": "Dollar on the line, nerves of steel! Let's see who walks away richer!",
+    "mood": "anticipation",
+    "emoji_reaction": "coin spinning"
+  }
+}

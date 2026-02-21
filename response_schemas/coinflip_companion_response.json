@@ -1,0 +1,18 @@
+{
+  "agent_name": "CoinFlip Companion",
+  "agent_id": "699a0c496c4c5162bafb2ba1",
+  "description": "Game companion and commentator for CoinFlip Duel. Provides entertaining, short commentary, reactions, trash talk, game tips, and fun responses to game events.",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "commentary": "string",
+    "mood": "string",
+    "emoji_reaction": "string"
+  },
+  "example_response": {
+    "commentary": "Short entertaining commentary about the game event",
+    "mood": "The mood/tone of the commentary: hype, celebration, consolation, anticipation, tip",
+    "emoji_reaction": "A text description of a reaction icon to display"
+  }
+}

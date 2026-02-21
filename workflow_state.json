@@ -1,0 +1,11 @@
+{
+  "agents": {
+    "coinflip_companion": {
+      "agent_id": "699a0c496c4c5162bafb2ba1",
+      "name": "CoinFlip Companion",
+      "type": "game_companion",
+      "model": "gpt-4o-mini",
+      "status": "created"
+    }
+  }
+}

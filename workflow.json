@@ -1,0 +1,41 @@
+{
+  "name": "CoinFlip Duel",
+  "nodes": [
+    {
+      "id": "input_node",
+      "type": "Input",
+      "label": "Player Action",
+      "nodeCategory": "input"
+    },
+    {
+      "id": "coinflip_companion_agent",
+      "type": "Agent",
+      "label": "CoinFlip Companion",
+      "nodeCategory": "agent"
+    },
+    {
+      "id": "output_node",
+      "type": "Output",
+      "label": "Game Response",
+      "nodeCategory": "end"
+    }
+  ],
+  "edges": [
+    {
+      "source": "input_node",
+      "target": "coinflip_companion_agent"
+    },
+    {
+      "source": "coinflip_companion_agent",
+      "target": "output_node"
+    }
+  ],
+  "agents": [
+    {
+      "name": "CoinFlip Companion",
+      "agent_id": "699a0c496c4c5162bafb2ba1",
+      "type": "game_companion",
+      "model": "gpt-4o-mini"
+    }
+  ]
+}
